@@ -1,11 +1,6 @@
 from collections import Counter
 import math
 import os
-def clear ():
-     input("press enter to continue")
-     os.system('cls')
-     os.system('clear')
-
 
 english_letter_probabilities = [
     (' ', 0.182), ('E', 0.127), ('T', 0.091), ('A', 0.082), ('O', 0.075),
@@ -24,8 +19,20 @@ french_letter_probabilities = [
     ('W', 0.0006), ('K', 0.0005)
 ]
 
+# Frequent English digraphs
+common_digraphs_en = {
+    "th", "he", "in", "er", "an", "re", "on", "at", "en", "es",
+    "st", "nt", "ti", "ou", "ng", "ed"
+}
+
+# Frequent French digraphs
+common_digraphs_fr = {
+    "es", "en", "le", "de", "nt", "ou", "et", "ai", "on", "te",
+    "qu", "ch", "au", "tr", "ti"
+}
+
 common_words_en = {
-    "io","the", "be", "to", "of", "and", "a", "in", "that", "have", "I",
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "I",
     "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
     "this", "but", "his", "by", "from", "they", "we", "say", "her", "she"
 }
@@ -36,25 +43,34 @@ common_words_fr = {
     "du", "au", "pour", "avec", "il", "sur", "mais", "plus", "tout", "comme"
 }
 
+def clear():
+    input("Press enter to continue")
+    os.system('cls')
+    os.system('clear')
+
 def manual_changes(sentence):
-    continu=True
-    while continu==True:
-                    letter = input("enter the letter you want to replace ")
-                    
-                    if letter.lower() in sentence :
-                        new_letter = input("enter the new letter ").upper()
-                        sentence = sentence.replace(letter,new_letter)
-                        print(sentence)
-                    else:
-                        print("the letter is not in the text")
-                    continu = input("do you want to continue? (y/n) ")
-                    if continu.lower() == 'n':
-                        continu=False
+    while True:
+        letter = input("Enter the letter you want to replace: ")
+        if letter.lower() in sentence:
+            new_letter = input("Enter the new letter: ").upper()
+            sentence = sentence.replace(letter, new_letter)
+            print(sentence)
+        else:
+            print("The letter is not in the text")
+        if input("Do you want to continue? (y/n) ").lower() == 'n':
+            break
     return sentence
-    
+
+def find_digraphs(text):
+    digraphs = Counter(text[i:i+2] for i in range(len(text)-1))
+    return digraphs.most_common()
+
+def replace_letters(sorted_char_count, new_sentence, letter_probabilities):
+    for i in range(len(sorted_char_count)):
+        new_sentence = new_sentence.replace(sorted_char_count[i][0], "_" if letter_probabilities[i][0] == " " else letter_probabilities[i][0])
+        print(new_sentence)
 
 def char_frequency_dict(text):
-
     os.system('clear')
     print(text)
     char_count = Counter(text)
@@ -63,42 +79,39 @@ def char_frequency_dict(text):
 
     clear()
     
-    for i in range(len(sorted_char_count)):
-        print("the result ",sorted_char_count[i][0],"==>",math.floor(sorted_char_count[i][1]*100/len(text)),"% \n")
+    for char, count in sorted_char_count:
+        print(f"The result {char} ==> {math.floor(count * 100 / len(text))}% \n")
 
     clear()
-    is_english = input("Is the text in English? (y/n) ")
-    if is_english.lower() == 'y':
-         is_english = True
-    else:
-         is_english = False
+    is_english = input("Is the text in English? (y/n) ").lower() == 'y'
     clear()
-    if is_english:
-        letter_probabilities = english_letter_probabilities
-        word_set = common_words_en
-    else:    
-        letter_probabilities = french_letter_probabilities
-        word_set = common_words_fr
-
-
-
-    new_sentence = text
-
-
-
-    for i in range(len(sorted_char_count)):
-        new_sentence = new_sentence.replace(sorted_char_count[i][0], "_" if letter_probabilities[i][0] == " " else letter_probabilities[i][0])
-        print(new_sentence)
-        clear()
-    new_sentence=new_sentence.split("_")
-    for word in new_sentence:
-        if word in word_set:
-            if word.lower() in word_set:
-                print("we might have recognized the word : ", word)
-            if input("can you read the text as it is (y/n)").lower() == 'n'and input("do you want to replace manualy a letter?? (y/n)").lower() == 'y':
-               new_sentence=manual_changes(new_sentence)
+    letter_probabilities = english_letter_probabilities if is_english else french_letter_probabilities
+    common_digraphs = common_digraphs_en if is_english else common_digraphs_fr
+    word_set = common_words_en if is_english else common_words_fr
     
+    new_sentence = text
+    replace_letters(sorted_char_count, new_sentence, letter_probabilities)
+    clear()
 
+    new_sentence_set = new_sentence.split("_")
+    for word in new_sentence_set:
+        if word.lower() in word_set:
+            print("We might have recognized the word:", word)
+    
+    for digraph in common_digraphs:  # No need for count, sets don't store frequencies
+        if digraph in new_sentence:
+            positions = [i for i in range(len(new_sentence)) if new_sentence.startswith(digraph, i)]
+            print(f"We might have recognized the digraph: {digraph} at positions {positions}")
+            for pos in positions:
+                print(f"Character at position {pos}: {new_sentence[pos]}{new_sentence[pos+1]}")
 
-text = "hello world"
+    
+    clear()
+    if input("Can you read the text as it is? (y/n) ").lower() == 'n':
+        if input("Do you want to manually replace a letter? (y/n) ").lower() == 'y':
+            new_sentence_set = manual_changes(new_sentence)
+        else:
+            print("The text is not readable")
+
+text = "encrypted message: f nvtu gjstu hsbtq uif dpodfqu pg b gpsnbm tztufn. Jnbhjofdiftt. Uif qjfdft boe npwft ibwf op nfbojoh pvutjef uif hbnf—uifz bsf kvtu tzncpmtnbojqvmbufe bddpsejoh up gjyfe svmft. Ijmcfsu xboufe up ftubcmjti b tjnjmbs gsbnfxpsl gpsnbuifnbujdt. If bjnfe up jefoujgz gpvoebujpobm byjpnt gspn xijdi bmm nbuifnbujdbm usvuit"
 char_frequency_dict(text)
