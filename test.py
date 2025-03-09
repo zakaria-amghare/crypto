@@ -1,5 +1,11 @@
 from collections import Counter
 import math
+import os
+def clear ():
+     input("press enter to continue")
+     os.system('cls')
+     os.system('clear')
+
 
 english_letter_probabilities = [
     (' ', 0.182), ('E', 0.127), ('T', 0.091), ('A', 0.082), ('O', 0.075),
@@ -19,7 +25,7 @@ french_letter_probabilities = [
 ]
 
 common_words_en = {
-    "the", "be", "to", "of", "and", "a", "in", "that", "have", "I",
+    "io","the", "be", "to", "of", "and", "a", "in", "that", "have", "I",
     "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
     "this", "but", "his", "by", "from", "they", "we", "say", "her", "she"
 }
@@ -30,54 +36,68 @@ common_words_fr = {
     "du", "au", "pour", "avec", "il", "sur", "mais", "plus", "tout", "comme"
 }
 
+def manual_changes(sentence):
+    continu=True
+    while continu==True:
+                    letter = input("enter the letter you want to replace ")
+                    
+                    if letter.lower() in sentence :
+                        new_letter = input("enter the new letter ").upper()
+                        sentence = sentence.replace(letter,new_letter)
+                        print(sentence)
+                    else:
+                        print("the letter is not in the text")
+                    continu = input("do you want to continue? (y/n) ")
+                    if continu.lower() == 'n':
+                        continu=False
+    return sentence
+    
 
 def char_frequency_dict(text):
 
-
+    os.system('clear')
+    print(text)
     char_count = Counter(text)
     sorted_char_count = sorted(char_count.items(), key=lambda item: (-item[1], item[0]))
+    print(len(text), "characters")
 
-    print(english_letter_probabilities)
-    print(len(text))
+    clear()
+    
     for i in range(len(sorted_char_count)):
         print("the result ",sorted_char_count[i][0],"==>",math.floor(sorted_char_count[i][1]*100/len(text)),"% \n")
 
+    clear()
     is_english = input("Is the text in English? (y/n) ")
     if is_english.lower() == 'y':
          is_english = True
     else:
          is_english = False
-
+    clear()
     if is_english:
         letter_probabilities = english_letter_probabilities
         word_set = common_words_en
     else:    
         letter_probabilities = french_letter_probabilities
         word_set = common_words_fr
+
+
+
     new_sentence = text
+
+
+
     for i in range(len(sorted_char_count)):
         new_sentence = new_sentence.replace(sorted_char_count[i][0], "_" if letter_probabilities[i][0] == " " else letter_probabilities[i][0])
         print(new_sentence)
-
+        clear()
     new_sentence=new_sentence.split("_")
     for word in new_sentence:
         if word in word_set:
-            print("we might decode the text as: ",new_sentence)
-            if input("can you read the text as it is ").lower() == 'n'& input("do you want to replace manualy a letter?? ").lower() == 'y':
-                while continu==True:
-                    letter = input("enter the letter you want to replace ")
-                    if letter.lower() in new_sentence :
-                        new_letter = input("enter the new letter ").upper()
-                        new_sentence = new_sentence.replace(letter,new_letter)
-                        print(new_sentence)
-                    else:
-                        print("the letter is not in the text")
-                    continu = input("do you want to continue? (y/n) ")
-                    if continu.lower() == 'n':
-                        continu=False
-                        break
+            if word.lower() in word_set:
+                print("we might have recognized the word : ", word)
+            if input("can you read the text as it is (y/n)").lower() == 'n'and input("do you want to replace manualy a letter?? (y/n)").lower() == 'y':
+               new_sentence=manual_changes(new_sentence)
     
-    return sorted_char_count
 
 
 text = "hello world"
