@@ -11,7 +11,7 @@ english_letter_probabilities = [
     ('Q', 0.00095), ('Z', 0.00074)
 ]
 french_letter_probabilities = [
-    (' ', 0.175), ('E', 0.1471), ('A', 0.0764), ('S', 0.0790), ('I', 0.0752),
+    ('E', 0.1471), ('A', 0.0764), ('S', 0.0790), ('I', 0.0752),
     ('T', 0.0724), ('N', 0.0715), ('R', 0.0669), ('U', 0.0631), ('L', 0.0546),
     ('O', 0.0579), ('D', 0.0369), ('C', 0.0326), ('M', 0.0297), ('P', 0.0252),
     ('V', 0.0183), ('Q', 0.0136), ('F', 0.0106), ('B', 0.0090), ('G', 0.0087),
@@ -65,12 +65,33 @@ def find_digraphs(text):
     digraphs = Counter(text[i:i+2] for i in range(len(text)-1))
     return digraphs.most_common()
 
-def replace_letters(sorted_char_count, new_sentence, letter_probabilities):
+def replace_letters(sorted_char_count, new_sentence,letter_probabilities):
     for i in range(len(sorted_char_count)):
         new_sentence = new_sentence.replace(sorted_char_count[i][0], "_" if letter_probabilities[i][0] == " " else letter_probabilities[i][0])
-        print(new_sentence)
+        
+    print(new_sentence)
 
-def char_frequency_dict(text):
+def fixing_based_on_words(text, word_set):
+    for word in word_set:
+        text = text.replace(word, word.lower())
+    return text
+
+def fixing_based_on_digraphs(text, common_digraphs):
+    for digraph in common_digraphs:
+        text = text.replace(digraph, digraph.lower())
+    return text
+#this function is used when the first one is not enough
+def frequency_analyses_2(text,sorted_char_count,how_many):
+   how_many += 1
+   os.system('clear')
+   print(text)
+   clear()
+   tmp = sorted_char_count[how_many]
+   sorted_char_count[how_many] = sorted_char_count[how_many+1]
+   sorted_char_count[how_many+1] = tmp
+
+def frequency_analyses(text):
+    how_many = 0
     os.system('clear')
     print(text)
     char_count = Counter(text)
@@ -92,26 +113,28 @@ def char_frequency_dict(text):
     new_sentence = text
     replace_letters(sorted_char_count, new_sentence, letter_probabilities)
     clear()
-
-    new_sentence_set = new_sentence.split("_")
-    for word in new_sentence_set:
-        if word.lower() in word_set:
-            print("We might have recognized the word:", word)
-    
-    for digraph in common_digraphs:  # No need for count, sets don't store frequencies
-        if digraph in new_sentence:
-            positions = [i for i in range(len(new_sentence)) if new_sentence.startswith(digraph, i)]
-            print(f"We might have recognized the digraph: {digraph} at positions {positions}")
-            for pos in positions:
-                print(f"Character at position {pos}: {new_sentence[pos]}{new_sentence[pos+1]}")
-
-    
+    new_sentence = fixing_based_on_digraphs(new_sentence, common_digraphs)
+    print(new_sentence)
     clear()
-    if input("Can you read the text as it is? (y/n) ").lower() == 'n':
-        if input("Do you want to manually replace a letter? (y/n) ").lower() == 'y':
-            new_sentence_set = manual_changes(new_sentence)
-        else:
-            print("The text is not readable")
+    new_sentence = fixing_based_on_words(new_sentence, word_set)
+    print(new_sentence)
+    clear()
+    new_sentence = manual_changes(new_sentence)
+    print(new_sentence)
+    clear()
+    print("The final result is: ", new_sentence)
+    print("is the text readable? (y/n) ")
+    if input().lower() == 'n':
+       print("Do you want to try again? (y/n) ")
+       if input().lower() == 'y':
+           print("we did not add the newest function yet")
+       else:
+           print("Goodbye")
+    else:
+        print("Goodbye")
+#
 
-text = "encrypted message: f nvtu gjstu hsbtq uif dpodfqu pg b gpsnbm tztufn. Jnbhjofdiftt. Uif qjfdft boe npwft ibwf op nfbojoh pvutjef uif hbnf—uifz bsf kvtu tzncpmtnbojqvmbufe bddpsejoh up gjyfe svmft. Ijmcfsu xboufe up ftubcmjti b tjnjmbs gsbnfxpsl gpsnbuifnbujdt. If bjnfe up jefoujgz gpvoebujpobm byjpnt gspn xijdi bmm nbuifnbujdbm usvuit"
-char_frequency_dict(text)
+    
+
+text = "LQYHTKIIZZLSRPAEKJUIMTQVLUMINFKNACIMQTAEEXRMOUEIPABKYTVHIZLVRDETUUUSJINEOILVWCQWBITSMBXVMVXLMXLPLXAFOVNUYNQKUTIIPDOZECEDUBBLXETUUUDVHOZTLEJTEDYVNEILXKZOLGOZLPDVRTUKSLVWPQAAAMSIDJLSTSNEKXUVRCQYNRRZEETVNJIUXKTEEXPAAYLVRTDKWRZWEQRSEDIMQSHIJEUEYPPFYREKZCCMEZZZEKTADZLNRMRQYSAXISFOVNUILMXLPLXAFOVNUIVUKUTRPODYBNVRJQAJRLGIMRUETISEOAAEXDQYLFWSRFYJOEWIPKYASPEEVVUIVEEZHUIIRXGJOEJIMTJECISQTARVTRUYLSUSIHKUTJSUHKUTUIPXUFEIHEEIHMGEGZKZDVGOYSBNZGAFOVNVXDQXLLRXIATZPLFLUWBEJTOGXHTKINGKYLVWERLLTJRESGAIWWDGTLCPFEDGATRUUQXLUJWIQKUGVRDDGUTRMNEOKEJGOGZZSLTPXKTEEXAUXLS"
+frequency_analyses(text)
