@@ -94,26 +94,21 @@ def verify_bit_length(n):
     """
     return n.bit_length() == 512
 
-# Fonction principale
-def main():
-    print("Génération d'un nombre premier de 512 bits...")
-    print("Cela peut prendre quelques secondes...")
+def generate_2048_bit_prime():
+    """
+    Génère un nombre premier de 2048 bits
+    """
+    min_val = 2**2047
+    max_val = 2**2048 - 1
     
-    p = generate_512_bit_prime()
-    
-    print(f"\nNombre premier p généré:")
-    print(f"p = {p}")
-    print(f"\nVérifications:")
-    print(f"Nombre de bits: {p.bit_length()}")
-    print(f"Est premier: {is_prime(p)}")
-    print(f"Est impair: {p % 2 == 1}")
-    print(f"Dans la plage 512 bits: {2**511 <= p < 2**512}")
-    
-    # Affichage en hexadécimal pour plus de lisibilité
-    print(f"\nEn hexadécimal:")
-    print(f"p = 0x{p:x}")
-
-if __name__ == "__main__":
-    main()
-
-main()
+    attempts = 0
+    while True:
+        attempts += 1
+        candidate = random.randrange(min_val, max_val + 1)
+        if candidate % 2 == 0:
+            candidate += 1
+        if candidate > max_val:
+            continue
+        if is_prime(candidate):
+            print(f"Nombre premier de 2048 bits trouvé après {attempts} tentatives")
+            return candidate
