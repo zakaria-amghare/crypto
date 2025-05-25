@@ -216,7 +216,7 @@ def test_elgamal_with_custom_message():
     
     return encrypted, decrypted
 
-def main():
+def main_ELGamal():
     """
     Fonction principale avec menu de choix
     """
@@ -238,5 +238,4 @@ def main():
         print("Choix invalide, lancement de la démonstration par défaut...")
         demonstrate_elgamal()
 
-if __name__ == "__main__":
-    main()
+main_ELGamal()

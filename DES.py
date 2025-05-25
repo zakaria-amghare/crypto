@@ -488,7 +488,7 @@ def show_random_key():
     print(f"  ASCII (si imprimable): {key.decode('utf-8', errors='replace')}")
 
 
-def main():
+def main_DES():
     """Main function"""
     des = DES()
 
@@ -512,5 +512,4 @@ def main():
         print("\n" * 2)
 
 
-if __name__ == "__main__":
-    main()
+main_DES()

@@ -373,7 +373,7 @@ def encrypt_message_simulation(dh):
     print(f"Vérification - Message déchiffré: {decrypted_message}")
 
 
-def main():
+def main_DiffieHellman():
     """Fonction principale"""
     dh = DiffieHellman()
     
@@ -405,5 +405,4 @@ def main():
         print("\n" * 2)
 
 
-if __name__ == "__main__":
-    main()
+main_DiffieHellman()

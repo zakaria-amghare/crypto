@@ -301,7 +301,7 @@ def load_keys():
         print(f"Erreur lors du chargement: {e}")
         return None, None
 
-def main():
+def main_RSA():
     """Fonction principale"""
     rsa = RSA()
     public_key = None
@@ -338,6 +338,4 @@ def main():
         
         input("\nAppuyez sur Entrée pour continuer...")
         print("\n" * 2)
-
-if __name__ == "__main__":
-    main()
+main_RSA()

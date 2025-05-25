@@ -199,7 +199,7 @@ def create_signature_system(key_size=1024):
     }
 
 # Example usage and demonstration
-if __name__ == "__main__":
+def main_RSA():
     print("🔐 Digital Signature Algorithm Demo (Function-based)")
     print("=" * 50)
     
@@ -276,7 +276,10 @@ def create_message_signature_pair(message, private_key):
     }
 
 def verify_message_signature_pair(pair, public_key):
+
     """Verify a message-signature pair"""
     message = pair['message']
     signature_bytes = pair['signature_bytes']
     return verify_signature(message, signature_bytes, public_key)
+
+main_RSA()  # Run the demonstration

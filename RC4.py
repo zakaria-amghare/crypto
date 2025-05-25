@@ -414,7 +414,7 @@ def demonstrate_rc4_steps(rc4):
     print(f"🔒 Message chiffré (base64): {base64.b64encode(ciphertext).decode()}")
 
 
-def main():
+def main_RC4():
     """Main function"""
     rc4 = RC4()
 
@@ -443,6 +443,4 @@ def main():
         input("\nAppuyez sur Entrée pour continuer...")
         print("\n" * 2)
 
-
-if __name__ == "__main__":
-    main()
+main_RC4()
