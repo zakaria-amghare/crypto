@@ -8,6 +8,10 @@ from ElGamal import *
 from vigenere import *
 from kasiskiAndSomeFunction import *
 from dechiffrement_cesar import *
+import os
+def clear():
+    """Clear the console screen"""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def display_main_menu():
     """Display the main menu with symmetric/asymmetric categories"""
@@ -142,6 +146,6 @@ def main():
             break
         else:
             print("❌ Choix invalide, veuillez réessayer.")
-
+        clear()
 if __name__ == "__main__":
     main()
