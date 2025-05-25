@@ -405,4 +405,3 @@ def main_DiffieHellman():
         print("\n" * 2)
 
 
-main_DiffieHellman()

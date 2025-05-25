@@ -443,4 +443,3 @@ def main_RC4():
         input("\nAppuyez sur Entrée pour continuer...")
         print("\n" * 2)
 
-main_RC4()

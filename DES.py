@@ -512,4 +512,3 @@ def main_DES():
         print("\n" * 2)
 
 
-main_DES()

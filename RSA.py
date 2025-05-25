@@ -338,4 +338,3 @@ def main_RSA():
         
         input("\nAppuyez sur Entrée pour continuer...")
         print("\n" * 2)
-main_RSA()

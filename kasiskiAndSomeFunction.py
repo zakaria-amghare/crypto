@@ -531,6 +531,3 @@ def kasiski_main():
         input("\n⏸️  Appuyez sur Entrée pour continuer...")
         print("\n" * 2)
 
-
-if __name__ == "__main__":
-    kasiski_main()

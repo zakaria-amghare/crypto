@@ -281,5 +281,4 @@ def verify_message_signature_pair(pair, public_key):
     message = pair['message']
     signature_bytes = pair['signature_bytes']
     return verify_signature(message, signature_bytes, public_key)
-
-main_RSA()  # Run the demonstration
+ # Run the demonstration

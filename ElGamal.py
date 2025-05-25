@@ -238,4 +238,3 @@ def main_ELGamal():
         print("Choix invalide, lancement de la démonstration par défaut...")
         demonstrate_elgamal()
 
-main_ELGamal()

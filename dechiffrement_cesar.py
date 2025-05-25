@@ -401,6 +401,3 @@ def main_cesar():
         input("\nAppuyez sur Entrée pour continuer...")
         print("\n" * 2)
 
-
-if __name__ == "__main__":
-    main_cesar()
