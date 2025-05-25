@@ -50,4 +50,4 @@ def main():
         else:
             print("Choix invalide, veuillez réessayer.")
 if __name__ == "__main__":
-
+    main()
