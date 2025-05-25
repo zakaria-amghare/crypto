@@ -1,4 +1,8 @@
-# DES Algorithm - Function-based Implementation
+# DES Algorithm - Interactive Implementation
+
+import os
+import base64
+from binascii import hexlify, unhexlify
 
 # Permutation Tables
 IP = [
@@ -122,164 +126,391 @@ PC2 = [
 
 SHIFTS = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1]
 
-def hex_to_bin(hex_str):
-    """Convert hexadecimal string to binary string"""
-    return bin(int(hex_str, 16))[2:].zfill(len(hex_str) * 4)
 
-def bin_to_hex(bin_str):
-    """Convert binary string to hexadecimal string"""
-    return hex(int(bin_str, 2))[2:].upper().zfill(len(bin_str) // 4)
+class DES:
+    def __init__(self):
+        pass
 
-def permute(data, table):
-    """Apply permutation using given table"""
-    return ''.join(data[i - 1] for i in table)
+    def hex_to_bin(self, hex_str):
+        """Convert hexadecimal string to binary string"""
+        return bin(int(hex_str, 16))[2:].zfill(len(hex_str) * 4)
 
-def left_shift(data, shifts):
-    """Perform left circular shift"""
-    return data[shifts:] + data[:shifts]
+    def bin_to_hex(self, bin_str):
+        """Convert binary string to hexadecimal string"""
+        return hex(int(bin_str, 2))[2:].upper().zfill(len(bin_str) // 4)
 
-def xor(a, b):
-    """XOR two binary strings"""
-    return ''.join('0' if a[i] == b[i] else '1' for i in range(len(a)))
+    def permute(self, data, table):
+        """Apply permutation using given table"""
+        return ''.join(data[i - 1] for i in table)
 
-def sbox_substitution(data):
-    """Apply S-box substitution"""
-    result = ''
-    for i in range(8):
-        block = data[i * 6:(i + 1) * 6]
-        row = int(block[0] + block[5], 2)
-        col = int(block[1:5], 2)
-        val = S[i][row][col]
-        result += format(val, '04b')
-    return result
+    def left_shift(self, data, shifts):
+        """Perform left circular shift"""
+        return data[shifts:] + data[:shifts]
 
-def generate_keys(key):
-    """Generate 16 round keys from main key"""
-    # Convert key to binary
-    key_bin = hex_to_bin(key)
-    
-    # Apply PC1 permutation
-    key_56 = permute(key_bin, PC1)
-    
-    # Split into left and right halves
-    left = key_56[:28]
-    right = key_56[28:]
-    
-    round_keys = []
-    
-    for i in range(16):
-        # Perform left shifts
-        left = left_shift(left, SHIFTS[i])
-        right = left_shift(right, SHIFTS[i])
+    def xor(self, a, b):
+        """XOR two binary strings"""
+        return ''.join('0' if a[i] == b[i] else '1' for i in range(len(a)))
+
+    def sbox_substitution(self, data):
+        """Apply S-box substitution"""
+        result = ''
+        for i in range(8):
+            block = data[i * 6:(i + 1) * 6]
+            row = int(block[0] + block[5], 2)
+            col = int(block[1:5], 2)
+            val = S[i][row][col]
+            result += format(val, '04b')
+        return result
+
+    def generate_keys(self, key):
+        """Generate 16 round keys from main key"""
+        # Convert key to binary
+        key_bin = self.hex_to_bin(key)
         
-        # Combine and apply PC2
-        combined = left + right
-        round_key = permute(combined, PC2)
-        round_keys.append(round_key)
-    
-    return round_keys
+        # Apply PC1 permutation
+        key_56 = self.permute(key_bin, PC1)
+        
+        # Split into left and right halves
+        left = key_56[:28]
+        right = key_56[28:]
+        
+        round_keys = []
+        
+        for i in range(16):
+            # Perform left shifts
+            left = self.left_shift(left, SHIFTS[i])
+            right = self.left_shift(right, SHIFTS[i])
+            
+            # Combine and apply PC2
+            combined = left + right
+            round_key = self.permute(combined, PC2)
+            round_keys.append(round_key)
+        
+        return round_keys
 
-def f_function(right, key):
-    """Feistel function"""
-    # Expansion
-    expanded = permute(right, E)
-    
-    # XOR with round key
-    xor_result = xor(expanded, key)
-    
-    # S-box substitution
-    substituted = sbox_substitution(xor_result)
-    
-    # Permutation
-    result = permute(substituted, P)
-    
-    return result
+    def f_function(self, right, key):
+        """Feistel function"""
+        # Expansion
+        expanded = self.permute(right, E)
+        
+        # XOR with round key
+        xor_result = self.xor(expanded, key)
+        
+        # S-box substitution
+        substituted = self.sbox_substitution(xor_result)
+        
+        # Permutation
+        result = self.permute(substituted, P)
+        
+        return result
 
-def des_round(left, right, key):
-    """Single DES round"""
-    new_right = xor(left, f_function(right, key))
-    return right, new_right
+    def des_round(self, left, right, key):
+        """Single DES round"""
+        new_right = self.xor(left, self.f_function(right, key))
+        return right, new_right
 
-def des_encrypt(plaintext, key):
-    """Encrypt plaintext using DES"""
-    # Convert to binary
-    plain_bin = hex_to_bin(plaintext)
-    
-    # Initial permutation
-    permuted = permute(plain_bin, IP)
-    
-    # Split into left and right halves
-    left = permuted[:32]
-    right = permuted[32:]
-    
-    # Generate round keys
-    round_keys = generate_keys(key)
-    
-    # 16 rounds of Feistel
-    for i in range(16):
-        left, right = des_round(left, right, round_keys[i])
-    
-    # Swap and combine
-    combined = right + left
-    
-    # Final permutation
-    ciphertext_bin = permute(combined, FP)
-    
-    # Convert to hex
-    return bin_to_hex(ciphertext_bin)
+    def des_encrypt_block(self, plaintext, key):
+        """Encrypt a single 8-byte block using DES"""
+        # Convert to binary
+        plain_bin = self.hex_to_bin(plaintext)
+        
+        # Initial permutation
+        permuted = self.permute(plain_bin, IP)
+        
+        # Split into left and right halves
+        left = permuted[:32]
+        right = permuted[32:]
+        
+        # Generate round keys
+        round_keys = self.generate_keys(key)
+        
+        # 16 rounds of Feistel
+        for i in range(16):
+            left, right = self.des_round(left, right, round_keys[i])
+        
+        # Swap and combine
+        combined = right + left
+        
+        # Final permutation
+        ciphertext_bin = self.permute(combined, FP)
+        
+        # Convert to hex
+        return self.bin_to_hex(ciphertext_bin)
 
-def des_decrypt(ciphertext, key):
-    """Decrypt ciphertext using DES"""
-    # Convert to binary
-    cipher_bin = hex_to_bin(ciphertext)
-    
-    # Initial permutation
-    permuted = permute(cipher_bin, IP)
-    
-    # Split into left and right halves
-    left = permuted[:32]
-    right = permuted[32:]
-    
-    # Generate round keys (reverse order for decryption)
-    round_keys = generate_keys(key)
-    round_keys.reverse()
-    
-    # 16 rounds of Feistel
-    for i in range(16):
-        left, right = des_round(left, right, round_keys[i])
-    
-    # Swap and combine
-    combined = right + left
-    
-    # Final permutation
-    plaintext_bin = permute(combined, FP)
-    
-    # Convert to hex
-    return bin_to_hex(plaintext_bin)
+    def des_decrypt_block(self, ciphertext, key):
+        """Decrypt a single 8-byte block using DES"""
+        # Convert to binary
+        cipher_bin = self.hex_to_bin(ciphertext)
+        
+        # Initial permutation
+        permuted = self.permute(cipher_bin, IP)
+        
+        # Split into left and right halves
+        left = permuted[:32]
+        right = permuted[32:]
+        
+        # Generate round keys (reverse order for decryption)
+        round_keys = self.generate_keys(key)
+        round_keys.reverse()
+        
+        # 16 rounds of Feistel
+        for i in range(16):
+            left, right = self.des_round(left, right, round_keys[i])
+        
+        # Swap and combine
+        combined = right + left
+        
+        # Final permutation
+        plaintext_bin = self.permute(combined, FP)
+        
+        # Convert to hex
+        return self.bin_to_hex(plaintext_bin)
+
+    def pad_data(self, data):
+        """Padding PKCS7 for the data"""
+        block_size = 8
+        padding_length = block_size - (len(data) % block_size)
+        padding = bytes([padding_length] * padding_length)
+        return data + padding
+
+    def unpad_data(self, data):
+        """Remove PKCS7 padding"""
+        padding_length = data[-1]
+        return data[:-padding_length]
+
+    def encrypt(self, plaintext, key):
+        """Complete encryption with padding"""
+        if len(key) != 8:
+            raise ValueError("La clé doit faire exactement 8 bytes (64 bits)")
+
+        # Convert to bytes if necessary
+        if isinstance(plaintext, str):
+            plaintext = plaintext.encode('utf-8')
+        if isinstance(key, str):
+            key = key.encode('utf-8')
+
+        # Pad the data
+        padded_data = self.pad_data(plaintext)
+
+        # Convert key to hex
+        key_hex = key.hex().upper()
+
+        # Encrypt by blocks
+        encrypted_blocks = []
+        for i in range(0, len(padded_data), 8):
+            block = padded_data[i:i + 8]
+            block_hex = block.hex().upper()
+            encrypted_block_hex = self.des_encrypt_block(block_hex, key_hex)
+            encrypted_blocks.append(bytes.fromhex(encrypted_block_hex))
+
+        return b''.join(encrypted_blocks)
+
+    def decrypt(self, ciphertext, key):
+        """Complete decryption with padding removal"""
+        if len(key) != 8:
+            raise ValueError("La clé doit faire exactement 8 bytes (64 bits)")
+
+        # Convert to bytes if necessary
+        if isinstance(key, str):
+            key = key.encode('utf-8')
+
+        # Convert key to hex
+        key_hex = key.hex().upper()
+
+        # Decrypt by blocks
+        decrypted_blocks = []
+        for i in range(0, len(ciphertext), 8):
+            block = ciphertext[i:i + 8]
+            block_hex = block.hex().upper()
+            decrypted_block_hex = self.des_decrypt_block(block_hex, key_hex)
+            decrypted_blocks.append(bytes.fromhex(decrypted_block_hex))
+
+        decrypted_data = b''.join(decrypted_blocks)
+
+        # Remove padding
+        return self.unpad_data(decrypted_data)
 
 
-# Example usage
+def print_banner():
+    print("=" * 60)
+    print("          DES-64 ENCRYPTION/DECRYPTION TOOL")
+    print("=" * 60)
+    print()
+
+
+def generate_random_key():
+    """Generate a random 8-byte key"""
+    return os.urandom(8)
+
+
+def get_user_input():
+    """User interface for input"""
+    print("Choisissez une option:")
+    print("1. Chiffrer un message")
+    print("2. Déchiffrer un message")
+    print("3. Générer une clé aléatoire")
+    print("4. Quitter")
+    print()
+
+    choice = input("Votre choix (1-4): ").strip()
+    return choice
+
+
+def encrypt_message(des):
+    """Interface for encrypting a message"""
+    print("\n--- CHIFFREMENT ---")
+
+    # Enter message
+    message = input("Entrez le message à chiffrer: ")
+    if not message:
+        print("Erreur: Le message ne peut pas être vide.")
+        return
+
+    # Enter key
+    print("\nOptions pour la clé:")
+    print("1. Entrer une clé de 8 caractères")
+    print("2. Générer une clé aléatoire")
+
+    key_choice = input("Votre choix (1-2): ").strip()
+
+    if key_choice == "1":
+        key = input("Entrez la clé (exactement 8 caractères): ")
+        if len(key) != 8:
+            print(f"Erreur: La clé doit faire exactement 8 caractères. Longueur actuelle: {len(key)}")
+            return
+    elif key_choice == "2":
+        key = generate_random_key()
+        print(f"Clé générée (hex): {key.hex()}")
+        print(f"Clé générée (base64): {base64.b64encode(key).decode()}")
+    else:
+        print("Choix invalide.")
+        return
+
+    try:
+        # Encryption
+        encrypted_data = des.encrypt(message, key)
+
+        # Display results
+        print("\n--- RÉSULTATS DU CHIFFREMENT ---")
+        print(f"Message original: {message}")
+        if isinstance(key, str):
+            print(f"Clé utilisée: {key}")
+        else:
+            print(f"Clé utilisée (hex): {key.hex()}")
+            print(f"Clé utilisée (base64): {base64.b64encode(key).decode()}")
+        print(f"Message chiffré (hex): {encrypted_data.hex()}")
+        print(f"Message chiffré (base64): {base64.b64encode(encrypted_data).decode()}")
+
+    except Exception as e:
+        print(f"Erreur lors du chiffrement: {e}")
+
+
+def decrypt_message(des):
+    """Interface for decrypting a message"""
+    print("\n--- DÉCHIFFREMENT ---")
+
+    # Enter encrypted message
+    print("Format du message chiffré:")
+    print("1. Hexadécimal")
+    print("2. Base64")
+
+    format_choice = input("Votre choix (1-2): ").strip()
+
+    encrypted_input = input("Entrez le message chiffré: ").strip()
+    if not encrypted_input:
+        print("Erreur: Le message chiffré ne peut pas être vide.")
+        return
+
+    try:
+        if format_choice == "1":
+            encrypted_data = bytes.fromhex(encrypted_input)
+        elif format_choice == "2":
+            encrypted_data = base64.b64decode(encrypted_input)
+        else:
+            print("Choix invalide.")
+            return
+    except Exception as e:
+        print(f"Erreur lors de la conversion du message chiffré: {e}")
+        return
+
+    # Enter key
+    print("\nFormat de la clé:")
+    print("1. Texte (8 caractères)")
+    print("2. Hexadécimal")
+    print("3. Base64")
+
+    key_format = input("Votre choix (1-3): ").strip()
+    key_input = input("Entrez la clé: ").strip()
+
+    try:
+        if key_format == "1":
+            if len(key_input) != 8:
+                print(f"Erreur: La clé doit faire exactement 8 caractères. Longueur actuelle: {len(key_input)}")
+                return
+            key = key_input
+        elif key_format == "2":
+            key = bytes.fromhex(key_input)
+            if len(key) != 8:
+                print(f"Erreur: La clé doit faire exactement 8 bytes. Longueur actuelle: {len(key)}")
+                return
+        elif key_format == "3":
+            key = base64.b64decode(key_input)
+            if len(key) != 8:
+                print(f"Erreur: La clé doit faire exactement 8 bytes. Longueur actuelle: {len(key)}")
+                return
+        else:
+            print("Choix invalide.")
+            return
+    except Exception as e:
+        print(f"Erreur lors de la conversion de la clé: {e}")
+        return
+
+    try:
+        # Decryption
+        decrypted_data = des.decrypt(encrypted_data, key)
+        decrypted_message = decrypted_data.decode('utf-8')
+
+        # Display results
+        print("\n--- RÉSULTATS DU DÉCHIFFREMENT ---")
+        print(f"Message déchiffré: {decrypted_message}")
+
+    except Exception as e:
+        print(f"Erreur lors du déchiffrement: {e}")
+
+
+def show_random_key():
+    """Generate and display a random key"""
+    print("\n--- GÉNÉRATION DE CLÉ ALÉATOIRE ---")
+    key = generate_random_key()
+    print(f"Clé aléatoire générée:")
+    print(f"  Hexadécimal: {key.hex()}")
+    print(f"  Base64: {base64.b64encode(key).decode()}")
+    print(f"  ASCII (si imprimable): {key.decode('utf-8', errors='replace')}")
+
+
+def main():
+    """Main function"""
+    des = DES()
+
+    while True:
+        print_banner()
+        choice = get_user_input()
+
+        if choice == "1":
+            encrypt_message(des)
+        elif choice == "2":
+            decrypt_message(des)
+        elif choice == "3":
+            show_random_key()
+        elif choice == "4":
+            print("Au revoir!")
+            break
+        else:
+            print("Choix invalide. Veuillez choisir entre 1 et 4.")
+
+        input("\nAppuyez sur Entrée pour continuer...")
+        print("\n" * 2)
+
+
 if __name__ == "__main__":
-    # Example key and plaintext (64-bit each, in hexadecimal)
-    key = "133457799BBCDFF1"
-    plaintext = "0123456789ABCDEF"
-    
-    print(f"Key: {key}")
-    print(f"Plaintext: {plaintext}")
-    
-    # Encrypt
-    ciphertext = des_encrypt(plaintext, key)
-    print(f"Ciphertext: {ciphertext}")
-    
-    # Decrypt
-    decrypted = des_decrypt(ciphertext, key)
-    print(f"Decrypted: {decrypted}")
-    
-    # Verify
-    print(f"Decryption successful: {plaintext == decrypted}")
-    
-    # Show round keys
-    print("\nRound Keys:")
-    round_keys = generate_keys(key)
-    for i, rk in enumerate(round_keys, 1):
-        print(f"Round {i:2d}: {bin_to_hex(rk)}")
+    main()

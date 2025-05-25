@@ -1,3 +1,8 @@
+import os
+import base64
+from binascii import hexlify, unhexlify
+
+
 class AES:
     def __init__(self):
         # S-Box utilisée pour SubBytes
@@ -272,30 +277,186 @@ class AES:
         return self.unpad_data(decrypted_data)
 
 
-# Exemple d'utilisation
-if __name__ == "__main__":
-    # Créer une instance AES
+def print_banner():
+    print("=" * 60)
+    print("          AES-128 ENCRYPTION/DECRYPTION TOOL")
+    print("=" * 60)
+    print()
+
+
+def generate_random_key():
+    """Génère une clé aléatoire de 16 bytes"""
+    return os.urandom(16)
+
+
+def get_user_input():
+    """Interface utilisateur pour saisir les données"""
+    print("Choisissez une option:")
+    print("1. Chiffrer un message")
+    print("2. Déchiffrer un message")
+    print("3. Générer une clé aléatoire")
+    print("4. Quitter")
+    print()
+
+    choice = input("Votre choix (1-4): ").strip()
+    return choice
+
+
+def encrypt_message(aes):
+    """Interface pour chiffrer un message"""
+    print("\n--- CHIFFREMENT ---")
+
+    # Saisie du message
+    message = input("Entrez le message à chiffrer: ")
+    if not message:
+        print("Erreur: Le message ne peut pas être vide.")
+        return
+
+    # Saisie de la clé
+    print("\nOptions pour la clé:")
+    print("1. Entrer une clé de 16 caractères")
+    print("2. Générer une clé aléatoire")
+
+    key_choice = input("Votre choix (1-2): ").strip()
+
+    if key_choice == "1":
+        key = input("Entrez la clé (exactement 16 caractères): ")
+        if len(key) != 16:
+            print(f"Erreur: La clé doit faire exactement 16 caractères. Longueur actuelle: {len(key)}")
+            return
+    elif key_choice == "2":
+        key = generate_random_key()
+        print(f"Clé générée (hex): {key.hex()}")
+        print(f"Clé générée (base64): {base64.b64encode(key).decode()}")
+    else:
+        print("Choix invalide.")
+        return
+
+    try:
+        # Chiffrement
+        encrypted_data = aes.encrypt(message, key)
+
+        # Affichage des résultats
+        print("\n--- RÉSULTATS DU CHIFFREMENT ---")
+        print(f"Message original: {message}")
+        if isinstance(key, str):
+            print(f"Clé utilisée: {key}")
+        else:
+            print(f"Clé utilisée (hex): {key.hex()}")
+            print(f"Clé utilisée (base64): {base64.b64encode(key).decode()}")
+        print(f"Message chiffré (hex): {encrypted_data.hex()}")
+        print(f"Message chiffré (base64): {base64.b64encode(encrypted_data).decode()}")
+
+    except Exception as e:
+        print(f"Erreur lors du chiffrement: {e}")
+
+
+def decrypt_message(aes):
+    """Interface pour déchiffrer un message"""
+    print("\n--- DÉCHIFFREMENT ---")
+
+    # Saisie du message chiffré
+    print("Format du message chiffré:")
+    print("1. Hexadécimal")
+    print("2. Base64")
+
+    format_choice = input("Votre choix (1-2): ").strip()
+
+    encrypted_input = input("Entrez le message chiffré: ").strip()
+    if not encrypted_input:
+        print("Erreur: Le message chiffré ne peut pas être vide.")
+        return
+
+    try:
+        if format_choice == "1":
+            encrypted_data = bytes.fromhex(encrypted_input)
+        elif format_choice == "2":
+            encrypted_data = base64.b64decode(encrypted_input)
+        else:
+            print("Choix invalide.")
+            return
+    except Exception as e:
+        print(f"Erreur lors de la conversion du message chiffré: {e}")
+        return
+
+    # Saisie de la clé
+    print("\nFormat de la clé:")
+    print("1. Texte (16 caractères)")
+    print("2. Hexadécimal")
+    print("3. Base64")
+
+    key_format = input("Votre choix (1-3): ").strip()
+    key_input = input("Entrez la clé: ").strip()
+
+    try:
+        if key_format == "1":
+            if len(key_input) != 16:
+                print(f"Erreur: La clé doit faire exactement 16 caractères. Longueur actuelle: {len(key_input)}")
+                return
+            key = key_input
+        elif key_format == "2":
+            key = bytes.fromhex(key_input)
+            if len(key) != 16:
+                print(f"Erreur: La clé doit faire exactement 16 bytes. Longueur actuelle: {len(key)}")
+                return
+        elif key_format == "3":
+            key = base64.b64decode(key_input)
+            if len(key) != 16:
+                print(f"Erreur: La clé doit faire exactement 16 bytes. Longueur actuelle: {len(key)}")
+                return
+        else:
+            print("Choix invalide.")
+            return
+    except Exception as e:
+        print(f"Erreur lors de la conversion de la clé: {e}")
+        return
+
+    try:
+        # Déchiffrement
+        decrypted_data = aes.decrypt(encrypted_data, key)
+        decrypted_message = decrypted_data.decode('utf-8')
+
+        # Affichage des résultats
+        print("\n--- RÉSULTATS DU DÉCHIFFREMENT ---")
+        print(f"Message déchiffré: {decrypted_message}")
+
+    except Exception as e:
+        print(f"Erreur lors du déchiffrement: {e}")
+
+
+def show_random_key():
+    """Génère et affiche une clé aléatoire"""
+    print("\n--- GÉNÉRATION DE CLÉ ALÉATOIRE ---")
+    key = generate_random_key()
+    print(f"Clé aléatoire générée:")
+    print(f"  Hexadécimal: {key.hex()}")
+    print(f"  Base64: {base64.b64encode(key).decode()}")
+    print(f"  ASCII (si imprimable): {key.decode('utf-8', errors='replace')}")
+
+
+def main():
+    """Fonction principale"""
     aes = AES()
 
-    # Clé de 128 bits (16 bytes)
-    key = "ma_cle_secrete16"  # Exactement 16 caractères
+    while True:
+        print_banner()
+        choice = get_user_input()
 
-    # Message à chiffrer
-    message = "Bonjour, ceci est un message secret à chiffrer avec AES!"
+        if choice == "1":
+            encrypt_message(aes)
+        elif choice == "2":
+            decrypt_message(aes)
+        elif choice == "3":
+            show_random_key()
+        elif choice == "4":
+            print("Au revoir!")
+            break
+        else:
+            print("Choix invalide. Veuillez choisir entre 1 et 4.")
 
-    print("Message original:", message)
-    print("Clé:", key)
-    print()
+        input("\nAppuyez sur Entrée pour continuer...")
+        print("\n" * 2)
 
-    # Chiffrement
-    encrypted = aes.encrypt(message, key)
-    print("Message chiffré (hex):", encrypted.hex())
-    print()
 
-    # Déchiffrement
-    decrypted = aes.decrypt(encrypted, key)
-    decrypted_text = decrypted.decode('utf-8')
-    print("Message déchiffré:", decrypted_text)
-
-    # Vérification
-    print("Déchiffrement réussi:", message == decrypted_text)
+if __name__ == "__main__":
+    main()
